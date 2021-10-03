@@ -42,6 +42,16 @@ class storeQuestion(Resource):
 
 class getQuestionList(Resource):
     def get(self):
+        questionCount = questions.find({}).count()
+
+        if questionCount == 0:
+            retJson = {
+                "status": 200,
+                "message": "You have not added any questions"
+            }
+
+            return jsonify(retJson)
+
         question = list(questions.find({}, {'_id': 0}))
 
         retJson = {
