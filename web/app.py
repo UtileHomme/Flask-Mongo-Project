@@ -1,24 +1,14 @@
 from flask import Flask, jsonify, request
 from flask_restful import Api, Resource
-from mongoDB import db
-import bcrypt
-
 # from pymongo import MongoClient
+import questions
+
+from mongoDB import MongoDB
 
 app = Flask(__name__)
 api = Api(app)
 
-# client = MongoClient("mongodb://db:27017")
-# db = client.QuestionsDatabase
-questions = db['questions']
-
-
-def getLastQuestionId(question):
-    if len(list(question.find())) is not 0:
-        last_question = list(question.find({}).sort("questionId", -1).limit(1))
-        return last_question[0]["questionId"]
-    else:
-        return 0
+questions = questions.Questions()
 
 
 class storeQuestion(Resource):
@@ -26,9 +16,9 @@ class storeQuestion(Resource):
         postedData = request.get_json()
         questionDescription = postedData["questionDescription"]
 
-        lastQuestionId = getLastQuestionId(questions)
+        lastQuestionId = questions.getLastQuestionId()
 
-        questions.insert({
+        questions.addQuestion({
             'questionId': lastQuestionId + 1,
             'questionDesc': questionDescription
         })
@@ -43,7 +33,7 @@ class storeQuestion(Resource):
 
 class getQuestionList(Resource):
     def get(self):
-        questionCount = questions.find({}).count()
+        questionCount = questions.getTotalCountOfQuestions()
 
         if questionCount == 0:
             retJson = {
@@ -53,7 +43,7 @@ class getQuestionList(Resource):
 
             return jsonify(retJson)
 
-        question = list(questions.find({}, {'_id': 0}))
+        question = questions.getCompleteListOfQuestions()
 
         retJson = {
             "status": 200,
@@ -67,7 +57,7 @@ class getQuestionList(Resource):
 
 class getQuestionById(Resource):
     def get(self, questionId):
-        searchedQuestionId = questions.find({"questionId": questionId}).count()
+        searchedQuestionId = questions.searchQuestionId(questionId)
 
         if searchedQuestionId == 0:
             retJson = {
@@ -76,14 +66,12 @@ class getQuestionById(Resource):
             }
             return jsonify(retJson)
 
-        question = questions.find({
-            "questionId": questionId,
-        })[0]["questionDesc"]
+        questionDetails = questions.getQuestionDetailsById(questionId)
 
         retJson = {
             "status": 200,
             "questionId": questionId,
-            "questionDesc": question
+            "questionDesc": questionDetails
         }
 
         return jsonify(retJson)

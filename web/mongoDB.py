@@ -1,4 +1,10 @@
 from pymongo import MongoClient
 
-client = MongoClient("mongodb://db:27017")
-db = client.QuestionsDatabase
+
+class MongoDB:
+    @classmethod
+    def connect(cls, collection_name):
+        client = MongoClient("mongodb://db:27017")
+        db = client.QuestionsDatabase
+        questions = db[collection_name]
+        return questions
