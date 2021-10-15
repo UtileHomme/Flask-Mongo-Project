@@ -1,14 +1,15 @@
 from flask import Flask, jsonify, request
 from flask_restful import Api, Resource
+from mongoDB import db
 import bcrypt
 
-from pymongo import MongoClient
+# from pymongo import MongoClient
 
 app = Flask(__name__)
 api = Api(app)
 
-client = MongoClient("mongodb://db:27017")
-db = client.QuestionsDatabase
+# client = MongoClient("mongodb://db:27017")
+# db = client.QuestionsDatabase
 questions = db['questions']
 
 
@@ -88,9 +89,9 @@ class getQuestionById(Resource):
         return jsonify(retJson)
 
 
-api.add_resource(storeQuestion, '/storeQuestion')
-api.add_resource(getQuestionById, '/getQuestionById/<int:questionId>')
-api.add_resource(getQuestionList, '/getQuestionList')
+api.add_resource(storeQuestion, '/api/v1/question')
+api.add_resource(getQuestionById, '/api/v1/question/<int:questionId>')
+api.add_resource(getQuestionList, '/api/v1/questions')
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
